@@ -45,3 +45,9 @@ def test_end_to_end_produces_output(tmp_path):
     assert stats["rows_in"] == 2
 def printMyName():
     print ("Ali Alarami")
+
+def test_print_my_name(capsys):
+    printMyName()
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Ali Alarami"
+    
