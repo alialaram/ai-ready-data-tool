@@ -149,11 +149,26 @@ def main():
     stats = clean(args.input, args.output, args.strategy, bool(cfg.get("drop_duplicates", True)))
     print(f"[ok] {args.input} -> {args.output}")
     print(f"     strategy={args.strategy}  rows_in={stats['rows_in']}  rows_out={stats['rows_out']}")
+# //fix: address review comments for column normalizer
 def normalize_columns(columns):
     return [
         col.strip().lower().replace(" ", "_")
         for col in columns
     ]
 
+def fill_missing(header, rows, strategy="mean"):
+    if strategy == "drop":
+        return [r for r in rows if all(str(c).strip() != "" for c in r)]
+
+    rows = [list(r) for r in rows]
+    for index in range(len(header)):
+        values = _numeric_column(rows, index)
+        if not values:
+            continue
+        replacement = statistics.mean(values) if strategy == "mean" else statistics.median(values)
+        for row in rows:
+            if index < len(row) and row[index].strip() == "":
+                row[index] = f"{replacement:.4f}".rstrip("0").rstrip(".")
+    return rows
 if __name__ == "__main__":
     main()
